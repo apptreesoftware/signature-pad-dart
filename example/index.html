@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Signature Pad demo</title>
+    <meta name="description" content="Signature Pad - HTML5 canvas based smooth signature drawing using variable width spline interpolation.">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link rel="stylesheet" href="css/signature-pad.css">
+</head>
+<body onselectstart="return false">
+<div id="signature-pad" class="m-signature-pad">
+    <div class="m-signature-pad--body">
+        <canvas></canvas>
+    </div>
+    <div class="m-signature-pad--footer">
+        <div class="description">Sign above</div>
+        <div class="left">
+            <button type="button" class="button clear" data-action="clear">Clear</button>
+        </div>
+        <div class="right">
+            <button id="save-png-button" type="button" class="button save" data-action="save-png">Save as PNG</button>
+            <button id="save-svg-button" type="button" class="button save" data-action="save-svg">Save as SVG</button>
+        </div>
+    </div>
+</div>
+<script type="application/dart" src="app.dart"></script>
+<script type="text/javascript" src="packages/browser/dart.js"></script>
+</body>
+</html>

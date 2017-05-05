@@ -1,0 +1,7 @@
+name: signature_pad
+dependencies:
+  browser: ^0.10.0
+  rate_limit: ^0.1.0
+environment:
+  sdk: ">=1.22.0"
+
