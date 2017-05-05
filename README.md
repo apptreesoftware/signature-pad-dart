@@ -2,6 +2,8 @@
 
 A Pure Dart implementation of [Signature Pad][signature-pad] by Szymon Nowak
 
+![logo][image]
+
 ## Example
 
 ```
@@ -23,3 +25,4 @@ The `example/` directory contains a Dart version of the [JS demo][demo]
 
 [signature-pad]: https://github.com/szimek/signature_pad
 [demo]: http://szimek.github.io/signature_pad/
+[image]: https://raw.githubusercontent.com/johnpryan/signature-pad-dart/master/doc/signature_pad.png
