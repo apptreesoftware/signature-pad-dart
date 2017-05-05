@@ -11,6 +11,7 @@ main() {
   var opts = new SignaturePadOptions(minWidth: 1.5, maxWidth: 4.0, velocityFilterWeight: 0.7);
   var signaturePad = new SignaturePad(canvas, opts);
   clearButton.onClick.listen((e) => signaturePad.clear());
+
   savePngButton.onClick.listen((e) {
     window.open(signaturePad.toDataUrl(), "signature");
   });
