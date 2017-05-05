@@ -1,7 +1,7 @@
 name: signature_pad
 author: John Ryan <john.p.ryan4@gmail.com>
 description: An HTML 5 canvas signature library
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/johnpryan/signature-pad-dart
 dependencies:
   rate_limit: ^0.1.0

@@ -8,7 +8,8 @@ main() {
   var savePngButton = querySelector("#save-png-button");
   var saveSvgButton = querySelector("#save-svg-button");
   var canvas = querySelector("canvas");
-  var opts = new SignaturePadOptions(minWidth: 1.5, maxWidth: 4.0, velocityFilterWeight: 0.7);
+  var opts = new SignaturePadOptions(
+      minWidth: 1.5, maxWidth: 4.0);
   var signaturePad = new SignaturePad(canvas, opts);
   clearButton.onClick.listen((e) => signaturePad.clear());
 
@@ -19,7 +20,7 @@ main() {
     window.open(signaturePad.toDataUrl('image/svg+xml'), "signature");
   });
 
-  window.onResize.listen((e) =>  resizeCanvas(canvas));
+  window.onResize.listen((e) => resizeCanvas(canvas));
   resizeCanvas(canvas);
 }
 
@@ -30,7 +31,7 @@ void resizeCanvas(CanvasElement canvas) {
   // When zoomed out to less than 100%, for some very strange reason,
   // some browsers report devicePixelRatio as less than 1
   // and only part of the canvas is cleared then.
-  var ratio =  max(window.devicePixelRatio ?? 1.0, 1);
+  var ratio = max(window.devicePixelRatio ?? 1.0, 1);
   canvas.width = canvas.offsetWidth * ratio;
   canvas.height = canvas.offsetHeight * ratio;
   (canvas.getContext("2d") as CanvasRenderingContext2D).scale(ratio, ratio);

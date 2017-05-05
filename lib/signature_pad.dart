@@ -119,12 +119,10 @@ class SignaturePad {
 
   void _handleMouseDown(MouseEvent e) {
     _mouseButtonDown = true;
-    print("MOUSE DOWN");
     _strokeBegin(e.client);
   }
 
   void _handleMouseMove(MouseEvent e) {
-    print("MOUSE MOVE down: $_mouseButtonDown");
     if (_mouseButtonDown) {
       _strokeUpdate(e.client);
     }
@@ -132,7 +130,6 @@ class SignaturePad {
 
   void _handleMouseUp(MouseEvent e) {
     _mouseButtonDown = false;
-    print("MOUSE UP");
     _strokeEnd();
   }
 
@@ -247,7 +244,7 @@ class SignaturePad {
   void _drawCurve(Bezier curve, num startWidth, num endWidth) {
     var ctx = context;
     var widthDelta = endWidth - startWidth;
-    var drawSteps = curve.length()/*.floor()*/;
+    var drawSteps = curve.length();
 
     ctx.beginPath();
 
