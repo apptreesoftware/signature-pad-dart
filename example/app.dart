@@ -2,6 +2,7 @@ import 'dart:html';
 import 'dart:math';
 
 import 'package:signature_pad/signature_pad.dart';
+import 'package:signature_pad/signature_pad_html.dart';
 
 main() {
   var clearButton = querySelector("[data-action=clear]");
@@ -10,7 +11,7 @@ main() {
   var canvas = querySelector("canvas");
   var opts = new SignaturePadOptions(
       minWidth: 1.5, maxWidth: 4.0);
-  var signaturePad = new SignaturePad(canvas, opts);
+  var signaturePad = new SignaturePadHtml(canvas, opts);
   clearButton.onClick.listen((e) => signaturePad.clear());
 
   savePngButton.onClick.listen((e) {

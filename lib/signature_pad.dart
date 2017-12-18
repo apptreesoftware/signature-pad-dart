@@ -1,8 +1,4 @@
-import 'dart:async';
-import 'dart:html';
 import 'dart:math';
-
-import 'package:rate_limit/rate_limit.dart';
 
 import 'package:signature_pad/bezier.dart';
 import 'package:signature_pad/mark.dart';
@@ -25,22 +21,16 @@ class SignaturePadOptions {
       this.dotSize});
 }
 
-class SignaturePad {
+abstract class SignaturePadBase {
   final SignaturePadOptions opts;
-  final CanvasElement canvas;
-  final CanvasRenderingContext2D context;
   final List _data = [];
 
   List<Mark<num>> points = [];
   double _lastVelocity;
   double _lastWidth;
-  bool _isEmpty;
-  bool _mouseButtonDown = false;
+  bool isEmpty;
 
-  List<StreamSubscription> _subscriptions = [];
-
-  SignaturePad(this.canvas, [this.opts = const SignaturePadOptions()])
-      : context = canvas.getContext('2d') {
+  SignaturePadBase([this.opts = const SignaturePadOptions()]) {
     this.clear();
     this.on();
   }
@@ -51,119 +41,45 @@ class SignaturePad {
   double get maxWidth => opts.maxWidth;
   Duration get throttle => new Duration(milliseconds: opts.throttle);
   double get dotSize => opts.dotSize ?? minWidth + maxWidth / 2;
-  bool get isEmpty => _isEmpty;
 
   void clear() {
-    context.fillStyle = opts.backgroundColor;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillRect(0, 0, canvas.width, canvas.height);
     _data.clear();
-    _reset();
-    _isEmpty = true;
+    reset();
+    isEmpty = true;
   }
 
-  void on() {
-    this._handleMouseEvents();
-    this._handleTouchEvents();
+  void on();
+
+  void off();
+
+  void strokeBegin(Point p) {
+    reset();
+    strokeUpdate(p);
   }
 
-  void off() {
-    _subscriptions.forEach((s) => s.cancel());
-  }
-
-  void _strokeBegin(Point p) {
-    _reset();
-    _strokeUpdate(p);
-  }
-
-  void _strokeUpdate(Point p) {
-    var point = _createMark(p.x, p.y);
+  void strokeUpdate(Point p) {
+    var point = createMark(p.x, p.y);
     var cw = _addMark(point);
     if (cw != null) {
-      _drawCurve(cw.curve, cw.widths.t1, cw.widths.t2);
+      drawCurve(cw.curve, cw.widths.t1, cw.widths.t2);
     }
   }
 
-  void _strokeEnd() {
+  void strokeEnd() {
     var canDrawCurve = this.points.length > 2;
     var point = this.points[0];
     if (!canDrawCurve && point != null) {
-      _drawDot(point);
+      drawDot(point);
     }
   }
 
-  void _handleMouseEvents() {
-    _mouseButtonDown = false;
-
-    _subscriptions.addAll([
-      canvas.onMouseDown.listen(_handleMouseDown),
-      canvas.onMouseMove
-          .transform(new Throttler(this.throttle))
-          .listen(_handleMouseMove),
-      canvas.onMouseUp.listen(_handleMouseUp),
-    ]);
-  }
-
-  void _handleTouchEvents() {
-    canvas.style.touchAction = 'none';
-    canvas.style.setProperty('msTouchAction', 'none');
-
-    _subscriptions.addAll([
-      canvas.onTouchStart.listen(_handleTouchStart),
-      canvas.onTouchMove
-          .transform(new Throttler(this.throttle))
-          .listen(_handleTouchMove),
-      canvas.onTouchEnd.listen(_handleTouchEnd),
-    ]);
-  }
-
-  void _handleMouseDown(MouseEvent e) {
-    _mouseButtonDown = true;
-    _strokeBegin(e.client);
-  }
-
-  void _handleMouseMove(MouseEvent e) {
-    if (_mouseButtonDown) {
-      _strokeUpdate(e.client);
-    }
-  }
-
-  void _handleMouseUp(MouseEvent e) {
-    _mouseButtonDown = false;
-    _strokeEnd();
-  }
-
-  void _handleTouchStart(TouchEvent e) {
-    var touch = e.changedTouches[0];
-    e.preventDefault();
-    _strokeBegin(touch.client);
-  }
-
-  void _handleTouchMove(TouchEvent e) {
-    var touch = e.changedTouches[0];
-    e.preventDefault();
-    _strokeUpdate(touch.client);
-  }
-
-  void _handleTouchEnd(TouchEvent e) {
-    var wasCanvasTouched = e.target == canvas;
-    if (wasCanvasTouched) {
-      e.preventDefault();
-      _strokeEnd();
-    }
-  }
-
-  void _reset() {
+  void reset() {
     points.clear();
     _lastVelocity = 0.0;
     _lastWidth = (minWidth + maxWidth) / 2;
-    context.fillStyle = penColor;
   }
 
-  Mark _createMark(num x, num y, [DateTime time]) {
-    var rect = canvas.getBoundingClientRect();
-    return new Mark(x - rect.left, y - rect.top, time ?? new DateTime.now());
-  }
+  Mark createMark(num x, num y, [DateTime time]);
 
   _CurveWidth _addMark(Mark p) {
     points.add(p);
@@ -235,19 +151,11 @@ class SignaturePad {
     return max(maxWidth / (velocity + 1), minWidth);
   }
 
-  void _drawPoint(num x, num y, num size) {
-    context.moveTo(x, y);
-    context.arc(x, y, size, 0, 2 * PI);
-    _isEmpty = false;
-  }
+  void drawPoint(num x, num y, num size);
 
-  void _drawCurve(Bezier curve, num startWidth, num endWidth) {
-    var ctx = context;
+  void drawCurve(Bezier curve, num startWidth, num endWidth) {
     var widthDelta = endWidth - startWidth;
     var drawSteps = curve.length();
-
-    ctx.beginPath();
-
     for (var i = 0; i < drawSteps; i += 1) {
       // Calculate the Bezier (x, y) coordinate for this step.
       var t = i / drawSteps;
@@ -268,26 +176,16 @@ class SignaturePad {
       y += ttt * curve.endPoint.y;
 
       var width = startWidth + (ttt * widthDelta);
-      this._drawPoint(x, y, width);
+      this.drawPoint(x, y, width);
     }
-
-    ctx.closePath();
-    ctx.fill();
   }
 
-  void _drawDot(Mark point) {
-    var ctx = this.context;
+  void drawDot(Mark point) {
     var width = this.dotSize;
-
-    ctx.beginPath();
-    this._drawPoint(point.x, point.y, width);
-    ctx.closePath();
-    ctx.fill();
+    this.drawPoint(point.x, point.y, width);
   }
 
-  String toDataUrl([String type = 'image/png']) {
-    return canvas.toDataUrl(type);
-  }
+  String toDataUrl([String type = 'image/png']);
 }
 
 class _Tuple<T> {
