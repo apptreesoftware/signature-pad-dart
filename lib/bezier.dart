@@ -9,13 +9,13 @@ class Bezier {
   final Mark endPoint;
   Bezier(this.startPoint, this.control1, this.control2, this.endPoint);
 
-  num length() {
+  double length() {
     var steps = 10;
     var length = 0;
     var px;
     var py;
 
-    for (var i = 0; i <= steps; i += 1) {
+    for (var i = 0.0; i <= steps; i += 1) {
       var t = i / steps;
       var cx = this._point(
         t,
@@ -43,7 +43,7 @@ class Bezier {
     return length;
   }
 
-  num _point(num t, num start, num c1, num c2, num end) {
+  double _point(double t, double start, double c1, double c2, double end) {
     return (start * (1.0 - t) * (1.0 - t) * (1.0 - t)) +
         (3.0 * c1 * (1.0 - t) * (1.0 - t) * t) +
         (3.0 * c2 * (1.0 - t) * t * t) +

@@ -62,12 +62,12 @@ class SignaturePadHtml extends SignaturePadBase {
 
   void handleMouseDown(MouseEvent e) {
     _mouseButtonDown = true;
-    strokeBegin(e.client);
+    strokeBegin(doublePoint(e.client));
   }
 
   void handleMouseMove(MouseEvent e) {
     if (_mouseButtonDown) {
-      strokeUpdate(e.client);
+      strokeUpdate(doublePoint(e.client));
     }
   }
 
@@ -79,13 +79,13 @@ class SignaturePadHtml extends SignaturePadBase {
   void handleTouchStart(TouchEvent e) {
     var touch = e.changedTouches[0];
     e.preventDefault();
-    strokeBegin(touch.client);
+    strokeBegin(doublePoint(touch.client));
   }
 
   void handleTouchMove(TouchEvent e) {
     var touch = e.changedTouches[0];
     e.preventDefault();
-    strokeUpdate(touch.client);
+    strokeUpdate(doublePoint(touch.client));
   }
 
   void handleTouchEnd(TouchEvent e) {
@@ -101,7 +101,7 @@ class SignaturePadHtml extends SignaturePadBase {
     context.fillStyle = penColor;
   }
 
-  Mark createMark(num x, num y, [DateTime time]) {
+  Mark createMark(double x, double y, [DateTime time]) {
     var rect = canvas.getBoundingClientRect();
     return new Mark(x - rect.left, y - rect.top, time ?? new DateTime.now());
   }
@@ -110,13 +110,13 @@ class SignaturePadHtml extends SignaturePadBase {
     return canvas.toDataUrl(type);
   }
 
-  void drawPoint(num x, num y, num size) {
+  void drawPoint(double x, double y, double size) {
     context.moveTo(x, y);
     context.arc(x, y, size, 0, 2 * PI);
     isEmpty = false;
   }
 
-  void drawCurve(Bezier curve, num startWidth, num endWidth) {
+  void drawCurve(Bezier curve, double startWidth, double endWidth) {
     var ctx = context;
     ctx.beginPath();
 
@@ -136,4 +136,8 @@ class SignaturePadHtml extends SignaturePadBase {
     ctx.closePath();
     ctx.fill();
   }
+}
+
+Point<double> doublePoint(Point<num> p) {
+  return new Point(p.x + 0.0, p.y + 0.0);
 }

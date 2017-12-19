@@ -25,12 +25,12 @@ abstract class SignaturePadBase {
   final SignaturePadOptions opts;
   final List _data = [];
 
-  List<Mark<num>> points = [];
+  List<Mark> points = [];
   double _lastVelocity;
   double _lastWidth;
   bool isEmpty;
 
-  SignaturePadBase([this.opts = const SignaturePadOptions()]) {
+  SignaturePadBase(this.opts) {
     this.clear();
     this.on();
   }
@@ -48,9 +48,9 @@ abstract class SignaturePadBase {
     isEmpty = true;
   }
 
-  void on();
+  void on() {}
 
-  void off();
+  void off() {}
 
   void strokeBegin(Point p) {
     reset();
@@ -79,7 +79,7 @@ abstract class SignaturePadBase {
     _lastWidth = (minWidth + maxWidth) / 2;
   }
 
-  Mark createMark(num x, num y, [DateTime time]);
+  Mark createMark(double x, double y, [DateTime time]);
 
   _CurveWidth _addMark(Mark p) {
     points.add(p);
@@ -104,12 +104,29 @@ abstract class SignaturePadBase {
     return null;
   }
 
-  _Tuple<Point> _calculateCurveControlPoints(Mark s1, Mark s2, Mark s3) {
+  _Tuple<Point<double>> _calculateCurveControlPoints(
+      Mark s1, Mark s2, Mark s3) {
     var dx1 = s1.x - s2.x;
     var dy1 = s1.y - s2.y;
     var dx2 = s2.x - s3.x;
     var dy2 = s2.y - s3.y;
 
+    assert(s1.x is double);
+    assert(s1.y is double);
+    assert(s2.x is double);
+    assert(s2.y is double);
+    if (s1.x is! double) {
+      print('s1.x is not double');
+    }
+    if (s1.y is! double) {
+      print('s1.y is not double');
+    }
+    if (s2.x is! double) {
+      print('s2.x is not double');
+    }
+    if (s2.y is! double) {
+      print('s2.y is not double');
+    }
     var m1 = new Point((s1.x + s2.x) / 2.0, (s1.y + s2.y) / 2.0);
     var m2 = new Point((s2.x + s3.x) / 2.0, (s2.y + s3.y) / 2.0);
 
@@ -119,13 +136,14 @@ abstract class SignaturePadBase {
     var dxm = (m1.x - m2.x);
     var dym = (m1.y - m2.y);
 
+    assert(l2 is double);
     var k = l2 / (l1 + l2);
     var cm = new Point(m2.x + (dxm * k), m2.y + (dym * k));
 
     var tx = s2.x - cm.x;
     var ty = s2.y - cm.y;
 
-    return new _Tuple<Point>(
+    return new _Tuple<Point<double>>(
         new Point(m1.x + tx, m1.y + ty), new Point(m2.x + tx, m2.y + ty));
   }
 
@@ -136,8 +154,10 @@ abstract class SignaturePadBase {
     var velocity =
         (this.velocityFilterWeight * endPoint.velocityFrom(startPoint)) +
             ((1 - this.velocityFilterWeight) * this._lastVelocity);
+//    print('velocity = $velocity');
 
     var newWidth = this._strokeWidth(velocity);
+//    print('newWidth = $newWidth');
 
     var widths = new _Tuple(_lastWidth, newWidth);
 
@@ -148,17 +168,23 @@ abstract class SignaturePadBase {
   }
 
   double _strokeWidth(double velocity) {
-    return max(maxWidth / (velocity + 1), minWidth);
+    return max(maxWidth / (velocity + 1.0), minWidth);
   }
 
-  void drawPoint(num x, num y, num size);
+  void drawPoint(double x, double y, double size);
 
-  void drawCurve(Bezier curve, num startWidth, num endWidth) {
+  void drawCurve(Bezier curve, double startWidth, double endWidth) {
+    if (startWidth.isNaN) {
+      print('startWidth is NaN');
+    }
     var widthDelta = endWidth - startWidth;
+    if (widthDelta.isNaN) {
+      print('widthDelta is NaN');
+    }
     var drawSteps = curve.length();
-    for (var i = 0; i < drawSteps; i += 1) {
+    for (var i = 0.0; i < drawSteps; i += 1) {
       // Calculate the Bezier (x, y) coordinate for this step.
-      var t = i / drawSteps;
+      var t = i / drawSteps as double;
       var tt = t * t;
       var ttt = tt * t;
       var u = 1 - t;
@@ -176,6 +202,12 @@ abstract class SignaturePadBase {
       y += ttt * curve.endPoint.y;
 
       var width = startWidth + (ttt * widthDelta);
+      if (ttt.isNaN) {
+        print('ttt is NaN');
+      }
+      if (width.isNaN) {
+        print('width is NaN');
+      }
       this.drawPoint(x, y, width);
     }
   }
