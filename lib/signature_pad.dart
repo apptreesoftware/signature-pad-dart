@@ -154,10 +154,8 @@ abstract class SignaturePadBase {
     var velocity =
         (this.velocityFilterWeight * endPoint.velocityFrom(startPoint)) +
             ((1 - this.velocityFilterWeight) * this._lastVelocity);
-//    print('velocity = $velocity');
 
     var newWidth = this._strokeWidth(velocity);
-//    print('newWidth = $newWidth');
 
     var widths = new _Tuple(_lastWidth, newWidth);
 

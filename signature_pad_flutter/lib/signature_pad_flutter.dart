@@ -2,40 +2,59 @@ library signature_pad_flutter;
 
 import 'dart:async';
 import 'dart:math';
-import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:rate_limit/rate_limit.dart';
 import 'package:signature_pad/mark.dart';
 import 'package:signature_pad/signature_pad.dart';
 
-/// A Calculator.
+
+class SignaturePadController {
+  _SignaturePadDelegate _delegate;
+  void clear() => _delegate?.clear();
+  toSvg() => _delegate?.getSvg();
+  toPng() => _delegate?.getPng();
+}
+
+class _SignaturePadDelegate {
+  void clear();
+  getSvg();
+  getPng();
+}
+
 class SignaturePadWidget extends StatefulWidget {
   final SignaturePadOptions opts;
-  SignaturePadWidget(this.opts);
+  final SignaturePadController controller;
+  SignaturePadWidget(this.controller, this.opts);
 
   State<StatefulWidget> createState() {
-    return new SignaturePadState(opts);
+    return new SignaturePadState(controller, opts);
   }
 }
 
 class SignaturePadState extends SignaturePadBase
-    with State<SignaturePadWidget> {
+    with State<SignaturePadWidget> implements _SignaturePadDelegate {
+  SignaturePadController _controller;
   List<SPPoint> allPoints = [];
 
-  SignaturePadState(SignaturePadOptions opts) : super(opts);
-  SignaturePadPainter painter;
+  SignaturePadState(this._controller, SignaturePadOptions opts) : super(opts);
+
+  SignaturePadPainter _currentPainter;
 
   StreamController<DragUpdateDetails> _updateSink =
       new StreamController.broadcast();
   Stream<DragUpdateDetails> get _updates => _updateSink.stream;
 
   void initState() {
+    _controller._delegate = this;
+
     var throttler = new Throttler<dynamic>(this.throttle) as StreamTransformer;
     _updates.transform(throttler).listen(handleDragUpdate);
   }
 
   Widget build(BuildContext context) {
+    _currentPainter = new SignaturePadPainter(allPoints, opts);
     return new GestureDetector(
       onTapDown: handleTap,
       onHorizontalDragUpdate: (d) => _updateSink.add(d),
@@ -46,7 +65,7 @@ class SignaturePadState extends SignaturePadBase
       onVerticalDragStart: handleDragStart,
       behavior: HitTestBehavior.opaque,
       child: new CustomPaint(
-        painter: new SignaturePadPainter(allPoints, opts),
+        painter: _currentPainter,
       ),
     );
   }
@@ -84,12 +103,10 @@ class SignaturePadState extends SignaturePadBase
     strokeBegin(new Point(offs.dx, offs.dy));
   }
 
-  @override
   Mark createMark(double x, double y, [DateTime time]) {
     return new Mark(x, y, time ?? new DateTime.now());
   }
 
-  @override
   void drawPoint(double x, double y, num size) {
     var point = new Point(x, y);
     setState(() {
@@ -97,7 +114,6 @@ class SignaturePadState extends SignaturePadBase
     });
   }
 
-  @override
   String toDataUrl([String type = 'image/png']) {
     return null;
   }
@@ -106,9 +122,25 @@ class SignaturePadState extends SignaturePadBase
     return super.toDiagnosticsNode(name: name, style: style);
   }
 
-  @override
   String toStringShort() {
     return super.toStringShort();
+  }
+
+  void clear() {
+    super.clear();
+    if (mounted) {
+      setState(() {
+        allPoints = [];
+      });
+    }
+  }
+
+  getPng() {
+    return _currentPainter.getPng();
+  }
+
+  getSvg() {
+
   }
 }
 
@@ -122,9 +154,30 @@ class SPPoint {
 class SignaturePadPainter extends CustomPainter {
   final List<SPPoint> allPoints;
   final SignaturePadOptions opts;
+  Canvas _lastCanvas;
+  Size _lastSize;
+
   SignaturePadPainter(this.allPoints, this.opts);
 
+  ui.Image getPng() {
+    if (_lastCanvas == null) {
+      return null;
+    }
+    if (_lastSize == null) {
+      return null;
+    }
+    var recorder = new ui.PictureRecorder();
+    var origin = new Offset(0.0, 0.0);
+    var paintBounds = new Rect.fromPoints(_lastSize.topLeft(origin), _lastSize.bottomRight(origin));
+    var canvas = new Canvas(recorder, paintBounds);
+    paint(canvas, _lastSize);
+    var picture = recorder.endRecording();
+    return picture.toImage(_lastSize.width.round(), _lastSize.height.round());
+  }
+
   paint(Canvas canvas, Size size) {
+    _lastCanvas = canvas;
+    _lastSize = size;
     for (var point in this.allPoints) {
       var paint = new Paint()..color = colorFromColorString(opts.penColor);
       paint.strokeWidth = 5.0;
