@@ -4,11 +4,10 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 
+import 'package:stream_transform/stream_transform.dart';
 import 'package:flutter/material.dart';
-import 'package:rate_limit/rate_limit.dart';
 import 'package:signature_pad/mark.dart';
 import 'package:signature_pad/signature_pad.dart';
-
 
 class SignaturePadController {
   _SignaturePadDelegate _delegate;
@@ -17,7 +16,7 @@ class SignaturePadController {
   toPng() => _delegate?.getPng();
 }
 
-class _SignaturePadDelegate {
+abstract class _SignaturePadDelegate {
   void clear();
   getSvg();
   getPng();
@@ -33,12 +32,17 @@ class SignaturePadWidget extends StatefulWidget {
   }
 }
 
-class SignaturePadState extends SignaturePadBase
-    with State<SignaturePadWidget> implements _SignaturePadDelegate {
+class SignaturePadState extends State<SignaturePadWidget>
+    with SignaturePadBase
+    implements _SignaturePadDelegate {
   SignaturePadController _controller;
   List<SPPoint> allPoints = [];
 
-  SignaturePadState(this._controller, SignaturePadOptions opts) : super(opts);
+  SignaturePadState(this._controller, SignaturePadOptions opts) {
+    this.opts = opts;
+    clear();
+    on();
+  }
 
   SignaturePadPainter _currentPainter;
 
@@ -49,8 +53,9 @@ class SignaturePadState extends SignaturePadBase
   void initState() {
     _controller._delegate = this;
 
-    var throttler = new Throttler<dynamic>(this.throttle) as StreamTransformer;
-    _updates.transform(throttler).listen(handleDragUpdate);
+//    var throttler = new Throttler<dynamic>(this.throttle) as StreamTransformer;
+//    _updates.transform(throttler).listen(handleDragUpdate);
+    _updates.listen(handleDragUpdate);
   }
 
   Widget build(BuildContext context) {
@@ -73,18 +78,17 @@ class SignaturePadState extends SignaturePadBase
   void handleTap(TapDownDetails details) {
     var x = details.globalPosition.dx;
     var y = details.globalPosition.dy;
-    var offs = new Offset(x,y);
+    var offs = new Offset(x, y);
     RenderBox refBox = context.findRenderObject();
     offs = refBox.globalToLocal(offs);
-    strokeBegin(
-        new Point(offs.dx, offs.dy));
+    strokeBegin(new Point(offs.dx, offs.dy));
     strokeEnd();
   }
 
   void handleDragUpdate(DragUpdateDetails details) {
     var x = details.globalPosition.dx;
     var y = details.globalPosition.dy;
-    var offs = new Offset(x,y);
+    var offs = new Offset(x, y);
     RenderBox refBox = context.findRenderObject();
     offs = refBox.globalToLocal(offs);
     strokeUpdate(new Point(offs.dx, offs.dy));
@@ -97,7 +101,7 @@ class SignaturePadState extends SignaturePadBase
   void handleDragStart(DragStartDetails details) {
     var x = details.globalPosition.dx;
     var y = details.globalPosition.dy;
-    var offs = new Offset(x,y);
+    var offs = new Offset(x, y);
     RenderBox refBox = context.findRenderObject();
     offs = refBox.globalToLocal(offs);
     strokeBegin(new Point(offs.dx, offs.dy));
@@ -118,14 +122,6 @@ class SignaturePadState extends SignaturePadBase
     return null;
   }
 
-  toDiagnosticsNode({String name, style}) {
-    return super.toDiagnosticsNode(name: name, style: style);
-  }
-
-  String toStringShort() {
-    return super.toStringShort();
-  }
-
   void clear() {
     super.clear();
     if (mounted) {
@@ -139,9 +135,7 @@ class SignaturePadState extends SignaturePadBase
     return _currentPainter.getPng();
   }
 
-  getSvg() {
-
-  }
+  getSvg() {}
 }
 
 class SPPoint {
@@ -168,7 +162,8 @@ class SignaturePadPainter extends CustomPainter {
     }
     var recorder = new ui.PictureRecorder();
     var origin = new Offset(0.0, 0.0);
-    var paintBounds = new Rect.fromPoints(_lastSize.topLeft(origin), _lastSize.bottomRight(origin));
+    var paintBounds = new Rect.fromPoints(
+        _lastSize.topLeft(origin), _lastSize.bottomRight(origin));
     var canvas = new Canvas(recorder, paintBounds);
     paint(canvas, _lastSize);
     var picture = recorder.endRecording();
@@ -201,7 +196,8 @@ class SignaturePadPainter extends CustomPainter {
   }
 }
 
-Color colorFromColorString(String s) => new _ColorFormatter()._convertColorFromHex(s);
+Color colorFromColorString(String s) =>
+    new _ColorFormatter()._convertColorFromHex(s);
 
 class _ColorFormatter {
   Color _convertColorFromHex(String hexVal) {

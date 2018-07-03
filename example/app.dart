@@ -1,5 +1,6 @@
 import 'dart:html';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:signature_pad/signature_pad.dart';
 import 'package:signature_pad/signature_pad_html.dart';
@@ -9,20 +10,47 @@ main() {
   var savePngButton = querySelector("#save-png-button");
   var saveSvgButton = querySelector("#save-svg-button");
   var canvas = querySelector("canvas");
-  var opts = new SignaturePadOptions(
-      minWidth: 1.5, maxWidth: 4.0);
+  var opts = new SignaturePadOptions(minWidth: 1.5, maxWidth: 4.0);
   var signaturePad = new SignaturePadHtml(canvas, opts);
   clearButton.onClick.listen((e) => signaturePad.clear());
 
   savePngButton.onClick.listen((e) {
-    window.open(signaturePad.toDataUrl(), "signature");
+    download(signaturePad.toDataUrl(), "signature.png");
   });
   saveSvgButton.onClick.listen((e) {
-    window.open(signaturePad.toDataUrl('image/svg+xml'), "signature");
+    download(signaturePad.toDataUrl('image/svg+xml'), "signature.svg");
   });
 
   window.onResize.listen((e) => resizeCanvas(canvas));
   resizeCanvas(canvas);
+}
+
+void download(String dataUrl, String filename) {
+  var blob = dataUrlToBlob(dataUrl);
+  var url = Url.createObjectUrl(blob);
+
+  var a = document.createElement("a");
+  a.setAttribute("style", "display: none");
+  a.setAttribute("href", url);
+  a.setAttribute("download", filename);
+
+  document.body.append(a);
+  a.click();
+
+  Url.revokeObjectUrl(url);
+}
+
+Blob dataUrlToBlob(String dataUri) {
+  const String base64Marker = ';base64,';
+  var parts = dataUri.split(base64Marker);
+  var contentType = parts[0].split(":")[1];
+  var raw = window.atob(parts[1]);
+  var rawLength = raw.length;
+  var list = Uint8List(rawLength);
+  for (var i = 0; i < rawLength; i++) {
+    list[i] = raw.codeUnitAt(i);
+  }
+  return new Blob([list], contentType);
 }
 
 // Adjust canvas coordinate space taking into account pixel ratio,

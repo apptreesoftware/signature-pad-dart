@@ -4,8 +4,10 @@ description: An HTML 5 canvas signature library
 version: 1.0.1
 homepage: https://github.com/johnpryan/signature-pad-dart
 dependencies:
-  rate_limit: ^0.1.0
+  stream_transform: ^0.0.9
 dev_dependencies:
   browser: ^0.10.0
+  build_runner: any
+  build_web_compilers: any
 environment:
   sdk: ">=1.22.0"

@@ -1,23 +1,26 @@
 import 'dart:async';
 import 'dart:html';
 import 'dart:math';
-import 'package:rate_limit/rate_limit.dart';
+import 'package:stream_transform/stream_transform.dart';
 import 'package:signature_pad/bezier.dart';
 import 'package:signature_pad/mark.dart';
 import 'package:signature_pad/signature_pad.dart';
 
 class SignaturePadHtml extends SignaturePadBase {
   final CanvasElement canvas;
-  final CanvasRenderingContext2D context;
+  CanvasRenderingContext2D context;
 
   bool _mouseButtonDown;
   List<StreamSubscription> _subscriptions = [];
 
   SignaturePadHtml(this.canvas,
-      [SignaturePadOptions opts = const SignaturePadOptions()])
-      : super(opts),
-        context = canvas.getContext('2d'),
-        _mouseButtonDown = false;
+      [SignaturePadOptions opts = const SignaturePadOptions()]) {
+    this.opts = opts;
+    context = canvas.getContext('2d');
+    _mouseButtonDown = false;
+    clear();
+    on();
+  }
 
   void clear() {
     context.fillStyle = opts.backgroundColor;
@@ -41,7 +44,7 @@ class SignaturePadHtml extends SignaturePadBase {
     _subscriptions.addAll([
       canvas.onMouseDown.listen(handleMouseDown),
       canvas.onMouseMove
-          .transform(new Throttler(this.throttle))
+          .transform(throttle(this.throttleDuration))
           .listen(handleMouseMove),
       canvas.onMouseUp.listen(handleMouseUp),
     ]);
@@ -54,7 +57,7 @@ class SignaturePadHtml extends SignaturePadBase {
     _subscriptions.addAll([
       canvas.onTouchStart.listen(handleTouchStart),
       canvas.onTouchMove
-          .transform(new Throttler(this.throttle))
+          .transform(throttle(this.throttleDuration))
           .listen(handleTouchMove),
       canvas.onTouchEnd.listen(handleTouchEnd),
     ]);
@@ -112,7 +115,7 @@ class SignaturePadHtml extends SignaturePadBase {
 
   void drawPoint(double x, double y, double size) {
     context.moveTo(x, y);
-    context.arc(x, y, size, 0, 2 * PI);
+    context.arc(x, y, size, 0, 2 * pi);
     isEmpty = false;
   }
 

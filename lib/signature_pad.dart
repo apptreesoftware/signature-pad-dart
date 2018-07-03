@@ -22,7 +22,7 @@ class SignaturePadOptions {
 }
 
 abstract class SignaturePadBase {
-  final SignaturePadOptions opts;
+  SignaturePadOptions opts;
   final List _data = [];
 
   List<Mark> points = [];
@@ -30,16 +30,11 @@ abstract class SignaturePadBase {
   double _lastWidth;
   bool isEmpty;
 
-  SignaturePadBase(this.opts) {
-    this.clear();
-    this.on();
-  }
-
   String get penColor => opts.penColor;
   double get velocityFilterWeight => opts.velocityFilterWeight;
   double get minWidth => opts.minWidth;
   double get maxWidth => opts.maxWidth;
-  Duration get throttle => new Duration(milliseconds: opts.throttle);
+  Duration get throttleDuration => new Duration(milliseconds: opts.throttle);
   double get dotSize => opts.dotSize ?? minWidth + maxWidth / 2;
 
   void clear() {

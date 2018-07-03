@@ -11,7 +11,7 @@ class Bezier {
 
   double length() {
     var steps = 10;
-    var length = 0;
+    var length = 0.0;
     var px;
     var py;
 
