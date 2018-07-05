@@ -1,3 +1,4 @@
-## [0.0.1] - TODO: Add release date.
+## [1.0.0] - 7/5/2018.
 
-* TODO: Describe initial release.
+* Dart 2 support
+* API support for flutter
