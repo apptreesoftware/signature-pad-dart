@@ -11,6 +11,10 @@ class SignaturePadOptions {
   final int throttle; // ms
   final double velocityFilterWeight;
   final double dotSize;
+
+  /// Grey text rendered in the bottom-right corner of the resulting image.
+  final String signatureText;
+
   const SignaturePadOptions(
       {this.penColor = 'black',
       this.backgroundColor = 'rgba(0,0,0,0)',
@@ -18,7 +22,8 @@ class SignaturePadOptions {
       this.maxWidth = 2.5,
       this.throttle = 16,
       this.velocityFilterWeight = 0.7,
-      this.dotSize});
+      this.dotSize,
+      this.signatureText});
 }
 
 abstract class SignaturePadBase {

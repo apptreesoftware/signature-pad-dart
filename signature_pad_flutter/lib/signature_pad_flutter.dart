@@ -4,8 +4,9 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
+import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide TextStyle;
 import 'package:signature_pad/mark.dart';
 import 'package:signature_pad/signature_pad.dart';
 import 'package:stream_transform/stream_transform.dart';
@@ -175,19 +176,28 @@ class SignaturePadPainter extends CustomPainter {
     var canvas = new Canvas(recorder, paintBounds);
     paint(canvas, _lastSize);
 
-    var paragraphBuilder = new ui.ParagraphBuilder(
-      new ui.ParagraphStyle(textDirection: ui.TextDirection.ltr),
-    );
-    paragraphBuilder.addText("Hello World!");
-    var paragraph = paragraphBuilder.build();
-    paragraph.layout(new ui.ParagraphConstraints(width: _lastSize.width));
-    canvas.drawParagraph(
-      paragraph,
-      new Offset(
-        _lastSize.width - paragraph.maxIntrinsicWidth / 2.0,
-        _lastSize.height - paragraph.height / 2.0,
-      ),
-    );
+    // Add grey text in the bottom-right corner
+    if (opts.signatureText != null) {
+      var paragraphBuilder = new ui.ParagraphBuilder(
+        new ui.ParagraphStyle(
+          textDirection: ui.TextDirection.ltr,
+        ),
+      );
+      var style = new TextStyle(color: new Color.fromRGBO(100, 100, 100, 1.0));
+      paragraphBuilder.pushStyle(style);
+      paragraphBuilder.addText(opts.signatureText);
+      paragraphBuilder.pop();
+      var paragraph = paragraphBuilder.build();
+      paragraph.layout(new ui.ParagraphConstraints(width: _lastSize.width));
+      canvas.drawParagraph(
+        paragraph,
+        new Offset(
+          _lastSize.width - paragraph.maxIntrinsicWidth,
+          _lastSize.height - paragraph.height,
+        ),
+      );
+    }
+
     var picture = recorder.endRecording();
     var image =
         picture.toImage(_lastSize.width.round(), _lastSize.height.round());
