@@ -9,6 +9,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart' hide TextStyle;
 import 'package:signature_pad/mark.dart';
 import 'package:signature_pad/signature_pad.dart';
+import 'package:signature_pad_flutter/src/point.dart';
 
 class SignaturePadController {
   _SignaturePadDelegate _delegate;
@@ -144,12 +145,7 @@ class SignaturePadState extends State<SignaturePadWidget>
   }
 }
 
-class SPPoint {
-  final Point point;
-  final double size;
-  SPPoint(this.point, this.size);
-  String toString() => "SPPoint $point $size";
-}
+
 
 class SignaturePadPainter extends CustomPainter {
   final List<SPPoint> allPoints;
