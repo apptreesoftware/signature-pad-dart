@@ -9,7 +9,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart' hide TextStyle;
 import 'package:signature_pad/mark.dart';
 import 'package:signature_pad/signature_pad.dart';
-import 'package:stream_transform/stream_transform.dart';
 
 class SignaturePadController {
   _SignaturePadDelegate _delegate;
@@ -54,9 +53,7 @@ class SignaturePadState extends State<SignaturePadWidget>
     super.initState();
     _controller._delegate = this;
 
-    _updates
-        .transform(throttle(this.throttleDuration))
-        .listen(handleDragUpdate);
+    _updates.listen(handleDragUpdate);
   }
 
   Widget build(BuildContext context) {
@@ -120,7 +117,7 @@ class SignaturePadState extends State<SignaturePadWidget>
     }
     var point = new Point(x, y);
     setState(() {
-      allPoints = new List.from(allPoints)..add(new SPPoint(point, size));
+      allPoints.add(new SPPoint(point, size));
     });
   }
 
@@ -157,15 +154,11 @@ class SPPoint {
 class SignaturePadPainter extends CustomPainter {
   final List<SPPoint> allPoints;
   final SignaturePadOptions opts;
-  Canvas _lastCanvas;
   Size _lastSize;
 
   SignaturePadPainter(this.allPoints, this.opts);
 
   Future<Uint8List> getPng() async {
-    if (_lastCanvas == null) {
-      return null;
-    }
     if (_lastSize == null) {
       return null;
     }
@@ -174,7 +167,8 @@ class SignaturePadPainter extends CustomPainter {
     var paintBounds = new Rect.fromPoints(
         _lastSize.topLeft(origin), _lastSize.bottomRight(origin));
     var canvas = new Canvas(recorder, paintBounds);
-    paint(canvas, _lastSize);
+
+    _paintPoints(canvas, _lastSize, 0);
 
     // Add grey text in the bottom-right corner
     if (opts.signatureText != null) {
@@ -206,9 +200,13 @@ class SignaturePadPainter extends CustomPainter {
   }
 
   void paint(Canvas canvas, Size size) {
-    _lastCanvas = canvas;
     _lastSize = size;
-    for (var point in this.allPoints) {
+    _paintPoints(canvas, size, 0);
+  }
+
+  void _paintPoints(Canvas canvas, Size size, int startIdx) {
+    for (var i = startIdx; i < allPoints.length; i++) {
+      var point = this.allPoints[i];
       var paint = new Paint()..color = colorFromColorString(opts.penColor);
       paint.strokeWidth = 5.0;
       var path = new Path();
