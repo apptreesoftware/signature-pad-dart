@@ -1,0 +1,16 @@
+name: signature_pad_flutter
+description: Flutter package for signature_pad
+version: 1.0.0
+author: John Ryan <john.p.ryan4@gmail.com>
+homepage: https://github.com/johnpryan/signature-pad-dart
+
+dependencies:
+  flutter:
+    sdk: flutter
+  signature_pad: ^2.0.0
+  stream_transform: ^0.0.9
+
+dev_dependencies:
+  test: ^0.12.0
+
+flutter:

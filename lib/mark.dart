@@ -1,16 +1,17 @@
 import 'dart:math';
 
-class Mark<T extends num> extends Point<T> {
+class Mark extends Point<double> {
   final DateTime time;
 
-  Mark(T x, T y, this.time) : super(x, y);
+  Mark(double x, double y, this.time) : super(x, y);
 
   int get timeMs => time.millisecondsSinceEpoch;
 
-  double velocityFrom(Mark<T> start) {
-    if (this.time == start.time) {
+  double velocityFrom(Mark start) {
+    if (this.timeMs == start.timeMs) {
       return 1.0;
     }
-    return this.distanceTo(start) / (this.timeMs - start.timeMs);
+    var result = this.distanceTo(start) / (this.timeMs - start.timeMs);
+    return result;
   }
 }
