@@ -10,4 +10,4 @@ dev_dependencies:
   build_runner: any
   build_web_compilers: any
 environment:
-  sdk: ">=1.22.0"
+  sdk: '>=1.23.0 <2.0.0'
