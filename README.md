@@ -17,4 +17,4 @@ The `example/` directory contains a Dart version of the [JS demo][demo]
 [signature-pad]: https://github.com/szimek/signature_pad
 [demo]: http://szimek.github.io/signature_pad/
 [image]: https://raw.githubusercontent.com/johnpryan/signature-pad-dart/master/doc/signature_pad.png
-[flutter-image]: https://raw.githubusercontent.com/johnpryan/signature-pad-dart/master/doc/signature_pad_ios.png
+[flutter-image]: https://github.com/apptreesoftware/signature-pad-dart/raw/master/doc/signature_pad_ios.png
