@@ -3,22 +3,21 @@ library signature_pad_flutter;
 import 'dart:async';
 import 'dart:math';
 import 'dart:ui' as ui;
+import 'dart:typed_data';
 
-import 'package:stream_transform/stream_transform.dart';
 import 'package:flutter/material.dart';
 import 'package:signature_pad/mark.dart';
 import 'package:signature_pad/signature_pad.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 class SignaturePadController {
   _SignaturePadDelegate _delegate;
   void clear() => _delegate?.clear();
-  toSvg() => _delegate?.getSvg();
   toPng() => _delegate?.getPng();
 }
 
 abstract class _SignaturePadDelegate {
   void clear();
-  getSvg();
   getPng();
 }
 
@@ -51,26 +50,29 @@ class SignaturePadState extends State<SignaturePadWidget>
   Stream<DragUpdateDetails> get _updates => _updateSink.stream;
 
   void initState() {
+    super.initState();
     _controller._delegate = this;
 
-//    var throttler = new Throttler<dynamic>(this.throttle) as StreamTransformer;
-//    _updates.transform(throttler).listen(handleDragUpdate);
-    _updates.listen(handleDragUpdate);
+    _updates
+        .transform(throttle(this.throttleDuration))
+        .listen(handleDragUpdate);
   }
 
   Widget build(BuildContext context) {
     _currentPainter = new SignaturePadPainter(allPoints, opts);
-    return new GestureDetector(
-      onTapDown: handleTap,
-      onHorizontalDragUpdate: (d) => _updateSink.add(d),
-      onVerticalDragUpdate: (d) => _updateSink.add(d),
-      onHorizontalDragEnd: handleDragEnd,
-      onVerticalDragEnd: handleDragEnd,
-      onHorizontalDragStart: handleDragStart,
-      onVerticalDragStart: handleDragStart,
-      behavior: HitTestBehavior.opaque,
+    return new ClipRect(
       child: new CustomPaint(
         painter: _currentPainter,
+        child: new GestureDetector(
+          onTapDown: handleTap,
+          onHorizontalDragUpdate: (d) => _updateSink.add(d),
+          onVerticalDragUpdate: (d) => _updateSink.add(d),
+          onHorizontalDragEnd: handleDragEnd,
+          onVerticalDragEnd: handleDragEnd,
+          onHorizontalDragStart: handleDragStart,
+          onVerticalDragStart: handleDragStart,
+          behavior: HitTestBehavior.opaque,
+        ),
       ),
     );
   }
@@ -112,6 +114,9 @@ class SignaturePadState extends State<SignaturePadWidget>
   }
 
   void drawPoint(double x, double y, num size) {
+    if (!_inBounds(x, y)) {
+      return;
+    }
     var point = new Point(x, y);
     setState(() {
       allPoints = new List.from(allPoints)..add(new SPPoint(point, size));
@@ -135,7 +140,10 @@ class SignaturePadState extends State<SignaturePadWidget>
     return _currentPainter.getPng();
   }
 
-  getSvg() {}
+  bool _inBounds(double x, double y) {
+    var size = this._currentPainter._lastSize;
+    return x >= 0 && x < size.width && y >= 0 && y < size.height;
+  }
 }
 
 class SPPoint {
@@ -153,7 +161,7 @@ class SignaturePadPainter extends CustomPainter {
 
   SignaturePadPainter(this.allPoints, this.opts);
 
-  ui.Image getPng() {
+  Future<Uint8List> getPng() async {
     if (_lastCanvas == null) {
       return null;
     }
@@ -166,11 +174,28 @@ class SignaturePadPainter extends CustomPainter {
         _lastSize.topLeft(origin), _lastSize.bottomRight(origin));
     var canvas = new Canvas(recorder, paintBounds);
     paint(canvas, _lastSize);
+
+    var paragraphBuilder = new ui.ParagraphBuilder(
+      new ui.ParagraphStyle(textDirection: ui.TextDirection.ltr),
+    );
+    paragraphBuilder.addText("Hello World!");
+    var paragraph = paragraphBuilder.build();
+    paragraph.layout(new ui.ParagraphConstraints(width: _lastSize.width));
+    canvas.drawParagraph(
+      paragraph,
+      new Offset(
+        _lastSize.width - paragraph.maxIntrinsicWidth / 2.0,
+        _lastSize.height - paragraph.height / 2.0,
+      ),
+    );
     var picture = recorder.endRecording();
-    return picture.toImage(_lastSize.width.round(), _lastSize.height.round());
+    var image =
+        picture.toImage(_lastSize.width.round(), _lastSize.height.round());
+    ByteData data = await image.toByteData(format: ui.ImageByteFormat.png);
+    return data.buffer.asUint8List();
   }
 
-  paint(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size size) {
     _lastCanvas = canvas;
     _lastSize = size;
     for (var point in this.allPoints) {

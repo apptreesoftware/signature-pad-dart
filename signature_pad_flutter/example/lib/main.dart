@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:signature_pad/signature_pad.dart';
 import 'package:signature_pad_flutter/signature_pad_flutter.dart';
@@ -8,8 +10,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new Scaffold(
-        appBar: new AppBar(title: new Text("SignaturePad")),
-        body: new SignaturePadExample(),
+        body: new SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: new SignaturePadExample(),
+          ),
+        ),
       ),
     );
   }
@@ -28,37 +34,56 @@ class SignaturePadExampleState extends State<SignaturePadExample> {
   }
 
   Widget build(BuildContext context) {
+    var signaturePad = new SignaturePadWidget(
+      _padController,
+      new SignaturePadOptions(
+        dotSize: 5.0,
+        minWidth: 1.5,
+        maxWidth: 5.0,
+        penColor: "#000000",
+      ),
+    );
     return new Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        new Expanded(
-          child: new AspectRatio(
-            aspectRatio: 2.0 / 1.0,
-            child: new Container(
-              decoration: new BoxDecoration(
-                  border: new Border.all(color: Colors.black, width: 2.0)),
-              child: new SignaturePadWidget(
-                _padController,
-                new SignaturePadOptions(
-                  dotSize: 3.0,
-                  minWidth: 1.5,
-                  penColor: "#000000",
+        new Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            new Expanded(
+              child: new Container(
+                height: 200.0,
+                child: new Center(
+                  child: new AspectRatio(
+                    aspectRatio: 3.0 / 1.0,
+                    child: new Container(
+                      decoration: new BoxDecoration(border: new Border.all()),
+                      child: signaturePad,
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
-        new Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            new MaterialButton(
-                onPressed: _handleClear, child: new Text("Clear")),
-            new MaterialButton(
-                onPressed: _handleSavePng, child: new Text("Save as PNG")),
-            new MaterialButton(
-                onPressed: _handleSaveSvg, child: new Text("Save as SVG")),
           ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0),
+          child: new Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              new MaterialButton(
+                onPressed: _handleClear,
+                child: new Text("Clear"),
+                color: Colors.blue,
+                textColor: Colors.white,
+              ),
+              new MaterialButton(
+                onPressed: _handleSavePng,
+                child: new Text("Save as PNG"),
+                color: Colors.red,
+                textColor: Colors.white,
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -68,22 +93,23 @@ class SignaturePadExampleState extends State<SignaturePadExample> {
     _padController.clear();
   }
 
-  void _handleSaveSvg() {
-    var result = _padController.toSvg();
-    print("svg = $result");
-  }
-
-  void _handleSavePng() {
-    var result = _padController.toPng() as Image;
-    print("png = $result");
-    Navigator.of(context).push(new MaterialPageRoute(
-          builder: (BuildContext context) {
-            return new Scaffold(
-              appBar: new AppBar(title: new Text("PNG")),
-              body: new Image(image: null),
-            );
-          },
-          fullscreenDialog: true,
-        ));
+  Future _handleSavePng() async {
+    var result = await _padController.toPng();
+    Navigator.of(context).push(
+          new MaterialPageRoute(
+            builder: (BuildContext context) {
+              return new Scaffold(
+                appBar: new AppBar(),
+                body: new Container(
+                  decoration: new BoxDecoration(border: new Border.all()),
+                  padding: new EdgeInsets.all(4.0),
+                  margin: new EdgeInsets.all(4.0),
+                  child: new Image.memory(result),
+                ),
+              );
+            },
+            fullscreenDialog: true,
+          ),
+        );
   }
 }
