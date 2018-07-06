@@ -13,12 +13,14 @@ import 'package:signature_pad_flutter/src/point.dart';
 class SignaturePadController {
   _SignaturePadDelegate _delegate;
   void clear() => _delegate?.clear();
-  toPng() => _delegate?.getPng();
+  Future<List<int>> toPng() => _delegate?.getPng();
+  bool get hasSignature => _delegate.hasSignature;
 }
 
 abstract class _SignaturePadDelegate {
   void clear();
-  getPng();
+  Future<List<int>> getPng();
+  bool get hasSignature;
 }
 
 class SignaturePadWidget extends StatefulWidget {
@@ -134,9 +136,11 @@ class SignaturePadState extends State<SignaturePadWidget>
     }
   }
 
-  getPng() {
+  Future<List<int>> getPng() {
     return _currentPainter.getPng();
   }
+
+  bool get hasSignature => _currentPainter.allPoints.isNotEmpty;
 
   bool _inBounds(double x, double y) {
     var size = this._currentPainter.lastSize;
