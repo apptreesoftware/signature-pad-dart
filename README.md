@@ -1,5 +1,5 @@
 <p align="center">
-<img src="doc/logo/Version1_hdpi.png" alt="Signature Pad Logo" height="200"/>
+<img src="https://raw.githubusercontent.com/johnpryan/signature-pad-dart/master/doc/logo/Version1_hdpi.png" alt="Signature Pad Logo" height="200"/>
 </p>
 
 <p align="center">
