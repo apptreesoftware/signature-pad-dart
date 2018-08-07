@@ -5,7 +5,8 @@
 <p align="center">
 A Pure Dart implementation of [Signature Pad][signature-pad] by Szymon Nowak.
 Supports Flutter and browsers.
-
+</p>
+<p align="center">
 ![logo][image]
 ![logo][flutter-image]
 </p>
