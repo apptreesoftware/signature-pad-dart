@@ -2,11 +2,13 @@
 <img src="doc/logo/Version1_hdpi.png" alt="Signature Pad Logo" height="200"/>
 </p>
 
+<p align="center">
 A Pure Dart implementation of [Signature Pad][signature-pad] by Szymon Nowak.
 Supports Flutter and browsers.
 
 ![logo][image]
 ![logo][flutter-image]
+</p>
 
 ## Example
 
