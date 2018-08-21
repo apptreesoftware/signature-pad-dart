@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:signature_pad/signature_pad.dart';
 import 'package:signature_pad/signature_pad_html.dart';
 
-main() {
+void main() {
   var clearButton = querySelector("[data-action=clear]");
   var savePngButton = querySelector("#save-png-button");
   var saveSvgButton = querySelector("#save-svg-button");

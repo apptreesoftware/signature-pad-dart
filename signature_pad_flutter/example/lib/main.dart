@@ -32,7 +32,9 @@ class SignaturePadExample extends StatefulWidget {
 
 class SignaturePadExampleState extends State<SignaturePadExample> {
   SignaturePadController _padController;
+
   void initState() {
+    super.initState();
     _padController = new SignaturePadController();
   }
 

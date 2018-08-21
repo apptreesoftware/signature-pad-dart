@@ -182,7 +182,7 @@ abstract class SignaturePadBase {
     var drawSteps = curve.length();
     for (var i = 0.0; i < drawSteps; i += 1) {
       // Calculate the Bezier (x, y) coordinate for this step.
-      var t = i / drawSteps as double;
+      var t = i / drawSteps;
       var tt = t * t;
       var ttt = tt * t;
       var u = 1 - t;
