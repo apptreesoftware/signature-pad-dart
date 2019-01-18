@@ -86,7 +86,8 @@ class SignaturePadExampleState extends State<SignaturePadExample> {
                   textColor: Colors.black,
                 ),
                 new RaisedButton(
-                  onPressed: _handleSavePng,
+                  onPressed:
+                      _padController.hasSignature ? _handleSavePng : null,
                   child: new Text("Save as PNG"),
                   color: Colors.white,
                   textColor: Colors.black,
