@@ -32,10 +32,15 @@ class SignaturePadExample extends StatefulWidget {
 
 class SignaturePadExampleState extends State<SignaturePadExample> {
   SignaturePadController _padController;
+  bool isSignatureStarted = false;
 
   void initState() {
     super.initState();
-    _padController = new SignaturePadController();
+    _padController = new SignaturePadController(onDrawStart: () {
+      setState(() {
+        isSignatureStarted = true;
+      });
+    });
   }
 
   Widget build(BuildContext context) {
@@ -86,7 +91,7 @@ class SignaturePadExampleState extends State<SignaturePadExample> {
                   textColor: Colors.black,
                 ),
                 new RaisedButton(
-                  onPressed:
+                  onPressed: isSignatureStarted ? _handleSavePng : null,
                       _padController.hasSignature ? _handleSavePng : null,
                   child: new Text("Save as PNG"),
                   color: Colors.white,
@@ -101,7 +106,10 @@ class SignaturePadExampleState extends State<SignaturePadExample> {
   }
 
   void _handleClear() {
-    _padController.clear();
+    setState(() {
+      _padController.clear();
+      isSignatureStarted = false;
+    });
   }
 
   Future _handleSavePng() async {

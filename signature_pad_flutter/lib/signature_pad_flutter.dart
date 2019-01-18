@@ -15,6 +15,9 @@ class SignaturePadController {
   void clear() => _delegate?.clear();
   Future<List<int>> toPng() => _delegate?.getPng();
   bool get hasSignature => _delegate.hasSignature;
+  Function onDrawStart;
+
+  SignaturePadController({this.onDrawStart});
 }
 
 abstract class _SignaturePadDelegate {
@@ -38,9 +41,11 @@ class SignaturePadState extends State<SignaturePadWidget>
     implements _SignaturePadDelegate {
   SignaturePadController _controller;
   List<SPPoint> allPoints = [];
+  bool isOnDrawStartCalled;
 
   SignaturePadState(this._controller, SignaturePadOptions opts) {
     this.opts = opts;
+    this.isOnDrawStartCalled = false;
     clear();
     on();
   }
@@ -78,6 +83,8 @@ class SignaturePadState extends State<SignaturePadWidget>
   }
 
   void handleTap(TapDownDetails details) {
+    handleDrawStartedCallback();
+
     var x = details.globalPosition.dx;
     var y = details.globalPosition.dy;
     var offs = new Offset(x, y);
@@ -88,12 +95,23 @@ class SignaturePadState extends State<SignaturePadWidget>
   }
 
   void handleDragUpdate(DragUpdateDetails details) {
+    handleDrawStartedCallback();
+
     var x = details.globalPosition.dx;
     var y = details.globalPosition.dy;
     var offs = new Offset(x, y);
     RenderBox refBox = context.findRenderObject();
     offs = refBox.globalToLocal(offs);
     strokeUpdate(new Point(offs.dx, offs.dy));
+  }
+
+  void handleDrawStartedCallback() {
+    if (!isOnDrawStartCalled) {
+      isOnDrawStartCalled = true;
+      if (_controller.onDrawStart != null) {
+        _controller.onDrawStart();
+      }
+    }
   }
 
   void handleDragEnd(DragEndDetails details) {
@@ -131,6 +149,7 @@ class SignaturePadState extends State<SignaturePadWidget>
     super.clear();
     if (mounted) {
       setState(() {
+        isOnDrawStartCalled = false;
         allPoints = [];
       });
     }
